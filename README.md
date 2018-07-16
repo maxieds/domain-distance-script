@@ -27,7 +27,7 @@ Now the script is ready to be run (see below)!
 ### Script parameters
 
 Running the script requires passing it three key items:
-1. The name of an alignment (i.e., Muscle or ClustalW) config file with extension ``*.mao``; 
+1. The name of an alignment (i.e., *Muscle* or *ClustalW*) config file with extension ``*.mao``; 
 2. The name of a distance config file with extension ``*.mao``; and 
 3. The name of an input newline-separated text file containing the full (absolute) path names of 
    each full CT file we wish to consider in the alignment-to-distance analysis.
