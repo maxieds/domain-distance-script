@@ -18,7 +18,6 @@ generate_combined_domain_temp_file() {
      for ctfile in "${InputCTFileNames[@]}"; do
           baseFilename=$(echo "$ctfile" | sed 's/\.[^.]*$//');
           FASTAFile=$(echo "${baseFilename}-branch0${domainNum}.fasta");
-          #echo $(cat $FASTAFile | tail -n 1) >> $outputTempFile;
           cat $FASTAFile >> $outputTempFile;
      done
 }
@@ -55,18 +54,18 @@ if [ -z "$ALIGNCFGFILE" ]; then
 fi
 if [ -z "$DISTCFGFILE" ]; then
      print_usage;
-     exit 2;
+     exit 3;
 fi
 if [ -z "$INPUTCT" ]; then
      print_usage;
-     exit 2;
+     exit 4;
 fi
 
 ## Now we have valid config and input CT file parameters to work with:
 ## Run RNABranchIDViz on each file in the input file to generate the 
 ## individual (X4) domain FASTA files:
-echo "Now running RNABranchIDViz to generate subdomain FASTA files ... "
-echo "This could take a while depending on how many structures were input."
+echo "Now running RNABranchIDViz to generate subdomain FASTA files ... ";
+echo "This could take a while depending on how many structures were input.";
 
 InputCTFileNames=();
 while read fname; do
@@ -75,24 +74,28 @@ while read fname; do
 done < $INPUTCT
 
 ## Now compute the sequence alignments and generate the distances: 
+echo "Now generating the domain-wise alignments and distances ...";
+
 TempFASTAFilename="temp.fasta";
-touch $TempFASTAFilename
+touch $TempFASTAFilename;
+MegaRuntimeMessagesOutFile="mega-messages.out";
 
 domainNums=("1" "2" "3" "4");
 domainDistances=();
 for dnum in "${domainNums[@]}"; do
+     echo "     > Generating data for domain #$dnum";
      rm $TempFASTAFilename;
      generate_combined_domain_temp_file $TempFASTAFilename $dnum;
      alignmentOutputFile=$(echo localAlignmentFile-branch0$dnum.meg);
-     $MEGACC -a $ALIGNCFGFILE -d $TempFASTAFilename -f MEGA -o $alignmentOutputFile;
+     $MEGACC -a $ALIGNCFGFILE -d $TempFASTAFilename -f MEGA -o $alignmentOutputFile > $MegaRuntimeMessagesOutFile 2>&1;
      distanceOutputFile=$(echo localDistanceFile-branch0$dnum.meg);
-     $MEGACC -a $DISTCFGFILE -d $alignmentOutputFile -f MEGA -o $distanceOutputFile;
+     $MEGACC -a $DISTCFGFILE -d $alignmentOutputFile -f MEGA -o $distanceOutputFile >> $MegaRuntimeMessagesOutFile 2>&1;
      distanceCompValue=$(cat $distanceOutputFile | tail -n 2 | head -n 1 | cut -d']' -f 2 | sed 's/ *//');
      domainDistances+=("  > Domain #$dnum Distance: $distanceCompValue");
 done
 
 ## Now print the computed distances: 
-echo -e "\n\nDomain-wise Distance Summary:";
+echo -e "Domain-wise Distance Summary:";
 for distSummary in "${domainDistances[@]}"; do
      echo $distSummary;
 done
@@ -103,5 +106,4 @@ if [ "$CLEANUP" = true ]; then
      rm localAlignment* localDistanceFile*;
 fi
 
-
-
+exit 0;
