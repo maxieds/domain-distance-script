@@ -17,6 +17,7 @@ generate_combined_domain_temp_file() {
      for ctfile in "${InputCTFileNames[@]}"; do
           baseFilename=$(echo "$ctfile" | sed 's/\.[^.]*$//');
           FASTAFile=$(echo "${baseFilename}-branch0${domainNum}.fasta");
+          #echo $(cat $FASTAFile | tail -n 1) >> $outputTempFile;
           cat $FASTAFile >> $outputTempFile;
      done
 }
@@ -64,11 +65,12 @@ done < $INPUTCT
 ## Now compute the sequence alignments and generate the distances: 
 TempFASTAFilename="temp.fasta";
 domainNums=("1" "2" "3" "4");
+domainNums=("1");
 for dnum in "${domainNums[@]}"; do
      rm $TempFASTAFilename;
      generate_combined_domain_temp_file $TempFASTAFilename $dnum;
      alignmentOutputFile=$(echo localAlignmentFile-branch0$dnum.meg);
-     $MEGACC -a $CONFIG_FILE -d $TempFASTAFilename -o $alignmentOutputFile;
+     $MEGACC -n -a $CONFIG_FILE -d $TempFASTAFilename -f MEGA -o $alignmentOutputFile;
 done
-
+rm $TempFASTAFilename;
 
