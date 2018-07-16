@@ -1,23 +1,51 @@
-Anna Kirkpatrick's Notes: 
+# Domain Distance Script 
 
-We are using MEGA: https://www.megasoftware.net/
+## Installation
 
-It looks like there is a deb available, so install should be simple. (I have played with the software, but using the Windows version.)
+### Required software
 
-There is a command line interface, which I'm sure is what you will end up using, but most of the documentation seems to be centered around the GUI. As much as I hate to say it, you might want to try doing these computations from the GUI first (where it will be easier to follow the documentation) before moving to the command line.
+We will require the following software to be installed in order to run the script out-of-the-box:
+1. [RNABranchIDViz](https://github.com/maxieds/RNABranchIDViz)
+2. [megacc](https://www.megasoftware.net/) 
 
-Essentially, we will be doing 2 separate steps with MEGA. Both of these steps happen after your code has separated out the domains, and they will happen independently for each domain.
+### Cloning the local script repository
 
-Step one is to construct a multiple sequence alignment. That's basically what it sounds like: a way of aligning the whole list of sequences.  You will be aligning nucleotide sequences, not amino acids. For the moment, we will use the ClustalW method with the default parameters. Here's the relevant documentation for the overview of sequence alignment: https://www.megasoftware.net/web_help_10/index.htm#t=Part_II_Assembling_Data_For_Analysis%2FBuilding_Sequence_Alignments%2FIntroduction_to_Alignment_Explorer.htm and for ClustalW in particular: https://www.megasoftware.net/web_help_10/index.htm#t=Part_II_Assembling_Data_For_Analysis%2FBuilding_Sequence_Alignments%2FClustalW%2FAbout_ClustalW.htm
+To install the script, first clone the GitHub repository into your home directory:
+```
+$ cd ~
+$ git clone https://github.com/maxieds/domain-distance-script.git
+$ cd domain-distance-script
+```
+Next, we should make the key script ``dds.sh`` executable in the current working directory:
+```
+chmod +x dds.sh
+```
+Now the script is ready to be run (see below)!
 
-The input to multiple sequence alignment is your set of *.fasta files, and you will output a *.meg file.
+## Usage 
 
-Step 2 is to compute distances.  MEGA groups this under analysis. We will compute pairwise Kimura 2-parameter distance, giving a matrix of distances. Then we'll take a simple average over all of these pairwise distances. So this step takes the *.meg file as input and outputs a single floating-point number.
+### Script parameters
 
-Here's the documentation on Kimura 2-parameter distance: https://www.megasoftware.net/web_help_10/index.htm#t=Kimura_2-parameter_distance.htm
+Running the script requires passing it three key items:
+1. The name of an alignment (i.e., Muscle or ClustalW) config file with extension ``*.mao``; 
+2. The name of a distance config file with extension ``*.mao``; and 
+3. The name of an input newline-separated text file containing the full (absolute) path names of 
+   each full CT file we wish to consider in the alignment-to-distance analysis.
 
-As before, we will use the default values for all of the parameters.
+### Script syntax
+Let's give an example of running the script with our desired parameters:
+```
+$ export ACFGFILE=config-files/clustal_align_nucleotide.mao
+$ export DCFGFILE=config-files/distance_estimation_pairwise_nucleotide.mao
+$ export MYSEQSFILE=myseqs.txt
+$ ./dds.sh --align-config=$ACFGFILE --dist-config=$DCFGFILE --input=$MYSEQSFILE | tail -n 5
+```
+This should output something like the following:
+```
+Domain-wise Distance Summary:
+> Domain #1 Distance: 1.05561752
+> Domain #2 Distance: 0.72167020
+> Domain #3 Distance: 0.60125824
+> Domain #4 Distance: 0.96824050
+````
 
-MEGA has a function to calculate that average for you, as well, so you shouldn't need to write any new code.  This should just be a matter of stringing the pieces together.
-
-The other link you probably need is the documentation on the command line interface.  That documentation seems to start here: https://www.megasoftware.net/web_help_10/index.htm#t=MEGA-CC_Overview.htm

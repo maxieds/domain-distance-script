@@ -6,9 +6,10 @@
 
 RNABRANCHVIZ=/home/maxie/RNA-projects/RNABranchIDViz/src/RNABranchIDViz
 MEGACC=megacc
+CLEANUP=true
 
 print_usage() {
-     echo "Usage: $0 [--clustalW] [--muscle] --config=cfg.mao --input=myseqs.txt"
+     echo "Usage: $0 --align-config=acfg.mao --dist-config=dcfg.mao --input=myseqs.txt"
 }
 
 generate_combined_domain_temp_file() {
@@ -26,8 +27,12 @@ generate_combined_domain_temp_file() {
 for arg in "$@"
 do
 case $arg in
-     --config=*)
-     CONFIG_FILE="${arg#*=}"
+     --align-config=*)
+     ALIGNCFGFILE="${arg#*=}"
+     shift
+     ;;
+     --dist-config=*)
+     DISTCFGFILE="${arg#*=}"
      shift
      ;;
      --input=*)
@@ -41,7 +46,11 @@ case $arg in
 esac
 done
 
-if [ -z "$CONFIG_FILE" ]; then
+if [ -z "$ALIGNCFGFILE" ]; then
+     print_usage;
+     exit 2;
+fi
+if [ -z "$DISTCFGFILE" ]; then
      print_usage;
      exit 2;
 fi
@@ -64,13 +73,32 @@ done < $INPUTCT
 
 ## Now compute the sequence alignments and generate the distances: 
 TempFASTAFilename="temp.fasta";
+touch $TempFASTAFilename
+
 domainNums=("1" "2" "3" "4");
-domainNums=("1");
+domainDistances=();
 for dnum in "${domainNums[@]}"; do
      rm $TempFASTAFilename;
      generate_combined_domain_temp_file $TempFASTAFilename $dnum;
      alignmentOutputFile=$(echo localAlignmentFile-branch0$dnum.meg);
-     $MEGACC -n -a $CONFIG_FILE -d $TempFASTAFilename -f MEGA -o $alignmentOutputFile;
+     $MEGACC -a $ALIGNCFGFILE -d $TempFASTAFilename -f MEGA -o $alignmentOutputFile;
+     distanceOutputFile=$(echo localDistanceFile-branch0$dnum.meg);
+     $MEGACC -a $DISTCFGFILE -d $alignmentOutputFile -f MEGA -o $distanceOutputFile;
+     distanceCompValue=$(cat $distanceOutputFile | tail -n 2 | head -n 1 | cut -d']' -f 2 | sed 's/ *//');
+     domainDistances+=("  > Domain #$dnum Distance: $distanceCompValue");
 done
+
+## Now print the computed distances: 
+echo -e "\n\nDomain-wise Distance Summary:";
+for distSummary in "${domainDistances[@]}"; do
+     echo $distSummary;
+done
+
+## Cleanup working directory: 
 rm $TempFASTAFilename;
+if [ "$CLEANUP" = true ]; then 
+     rm localAlignment* localDistanceFile*;
+fi
+
+
 
