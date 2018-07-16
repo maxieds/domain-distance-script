@@ -9,7 +9,7 @@ MEGACC=megacc
 CLEANUP=true
 
 print_usage() {
-     echo "Usage: $0 --align-config=acfg.mao --dist-config=dcfg.mao --input=myseqs.txt"
+     echo "Usage: $0 --align-config=acfg.mao --dist-config=dcfg.mao --input=myseqs.txt [--noclean]"
 }
 
 generate_combined_domain_temp_file() {
@@ -39,6 +39,9 @@ case $arg in
      INPUTCT="${arg#*=}"
      shift
      ;; 
+     --noclean)
+     CLEANUP=false
+     ;;
      *)
      print_usage
      exit 1
