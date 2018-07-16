@@ -7,9 +7,10 @@
 RNABRANCHVIZ=/home/maxie/RNA-projects/RNABranchIDViz/src/RNABranchIDViz
 MEGACC=megacc
 CLEANUP=true
+LOCALFILESUFFIX=""
 
 print_usage() {
-     echo "Usage: $0 --align-config=acfg.mao --dist-config=dcfg.mao --input=myseqs.txt [--noclean]"
+     echo "Usage: $0 --align-config=acfg.mao --dist-config=dcfg.mao --input=myseqs.txt [--noclean] [--datestamp-files]"
 }
 
 generate_combined_domain_temp_file() {
@@ -40,6 +41,9 @@ case $arg in
      ;; 
      --noclean)
      CLEANUP=false
+     ;;
+     --datestamp-files)
+     LOCALFILESUFFIX=$(date +"-%F-%H%M%S")
      ;;
      *)
      print_usage
@@ -86,9 +90,9 @@ for dnum in "${domainNums[@]}"; do
      echo "     > Generating data for domain #$dnum";
      rm $TempFASTAFilename;
      generate_combined_domain_temp_file $TempFASTAFilename $dnum;
-     alignmentOutputFile=$(echo localAlignmentFile-branch0$dnum.meg);
+     alignmentOutputFile=$(echo localAlignmentFile-branch0$dnum${LOCALFILESUFFIX}.meg);
      $MEGACC -a $ALIGNCFGFILE -d $TempFASTAFilename -f MEGA -o $alignmentOutputFile > $MegaRuntimeMessagesOutFile 2>&1;
-     distanceOutputFile=$(echo localDistanceFile-branch0$dnum.meg);
+     distanceOutputFile=$(echo localDistanceFile-branch0$dnum${LOCALFILESUFFIX}.meg);
      $MEGACC -a $DISTCFGFILE -d $alignmentOutputFile -f MEGA -o $distanceOutputFile >> $MegaRuntimeMessagesOutFile 2>&1;
      distanceCompValue=$(cat $distanceOutputFile | tail -n 2 | head -n 1 | cut -d']' -f 2 | sed 's/ *//');
      domainDistances+=("  > Domain #$dnum Distance: $distanceCompValue");
