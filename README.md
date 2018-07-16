@@ -59,10 +59,17 @@ The previous distance computation uses the *ClustalW* alignment. Let's recompute
 $ export ACFGFILE=config-files/muscle_align_nucleotide.mao
 $ export DCFGFILE=config-files/distance_estimation_pairwise_nucleotide.mao
 $ export MYSEQSFILE=myseqs.txt
-$ ./dds.sh --align-config=$ACFGFILE --dist-config=$DCFGFILE --input=$MYSEQSFILE | tail -n 5
+$ ./dds.sh --align-config=$ACFGFILE --dist-config=$DCFGFILE --input=$MYSEQSFILE
 ```
 This should output something like the following:
 ```
+Now running RNABranchIDViz to generate subdomain FASTA files ... 
+This could take a while depending on how many structures were input.
+Now generating the domain-wise alignments and distances ...
+     > Generating data for domain #1
+     > Generating data for domain #2
+     > Generating data for domain #3
+     > Generating data for domain #4
 Domain-wise Distance Summary:
 > Domain #1 Distance: 0.58991078
 > Domain #2 Distance: 0.68627662
