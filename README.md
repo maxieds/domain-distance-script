@@ -82,7 +82,7 @@ execution of the script can be viewed by running (press ``q`` to exit):
 $ less mega-messages.out
 ```
 
-## Other options to the script
+### Other options to the script
 
 For the purposes of debugging there is a ``--noclean`` script which will prevent the intermediate 
 ``*.meg`` and summary ``*.txt`` files from being removed after the execution of the script. 
@@ -114,4 +114,29 @@ The above should generate a directory listing that resembles the following outpu
 -rw-rw-r-- 1 maxie maxie 2.5K Jul 16 02:55 localDistanceFile-branch03-2018-07-16-025530_summary.txt
 -rw-rw-r-- 1 maxie maxie 1.2K Jul 16 02:55 localDistanceFile-branch04-2018-07-16-025530.meg
 -rw-rw-r-- 1 maxie maxie 2.5K Jul 16 02:55 localDistanceFile-branch04-2018-07-16-025530_summary.txt
+```
+
+### Notes on generating the input sequences file
+
+It is probably best to run the script from within the source ``domain-distance-script`` directory and 
+use *absolute* filenames as paths in the input, newline-delimited CT sequences file. Here is how to 
+generate a correct listing of absolute paths for a directory of CT files using the 
+``readlink -f filename.ct`` command syntax. Let's suppose that the source CT files we want to analyze are 
+already broken down into component subdirectories somewhere on the filesystem. 
+In our example, we will suppose that this directory is located in ``../``. Then we can generate the 
+appropriate input sequences file by running the following:
+```
+$ export FILESTOANALYZE="../"
+$ export MYSEQSFILE="./myseqs.txt"
+$ for filename in $(ls -1 $FILESTOANALYZE/*_nop.ct); do
+> echo $(readlink -f $filename) >> $MYSEQSFILE
+> done
+$ cat $MYSEQSFILE
+```
+This should result in something resembling the following file output:
+``` 
+/home/maxie/RNA-projects/d.16.b.M.hyopneumoniae_nop.ct
+/home/maxie/RNA-projects/d.16.b.M.leprae_nop.ct
+/home/maxie/RNA-projects/d.16.b.S.griseus_nop.ct
+/home/maxie/RNA-projects/d.16.e.E.cuniculi_nop.ct
 ```
